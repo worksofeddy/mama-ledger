@@ -1,0 +1,249 @@
+import Link from 'next/link'
+import Navigation from './components/Navigation'
+import NewsletterSignup from './components/NewsletterSignup'
+import FAQ from './components/FAQ'
+import ContactSection from './components/ContactSection'
+import HowItWorks from './components/HowItWorks'
+
+export default function HomePage() {
+  return (
+    <div>
+      <Navigation />
+
+      {/* Hero Section */}
+      <div className="bg-gray-900 text-white py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-bold mb-6">
+                Track Your Business Money
+              </h1>
+              <p className="text-lg text-gray-300 mb-8">
+                Mama Ledger is a simple and free tool to help you track your
+                business money. No more lost receipts or messy notebooks.
+              </p>
+              <Link
+                href="/dashboard"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Get Started
+              </Link>
+            </div>
+            <div>
+              <img
+                src="/assets/hero-image.png"
+                alt="Business Money Tracking"
+                className="rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div id="features" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Why Choose Mama Ledger?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="bg-white rounded-2xl p-8 text-center">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-indigo-600 w-8 h-8"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Easy to Use</h3>
+              <p className="text-gray-700">
+                Mama Ledger is designed to be intuitive and user-friendly.
+                You'll be tracking your business money in no time.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-8 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-blue-600 w-8 h-8"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Secure & Private</h3>
+              <p className="text-gray-700">
+                Your data is encrypted and stored securely. We take your
+                privacy seriously.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-8 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-green-600 w-8 h-8"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Free Forever</h3>
+              <p className="text-gray-700">
+                Mama Ledger will always be free for everyone. No hidden
+                costs or subscriptions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <HowItWorks />
+
+      {/* Newsletter Section */}
+      <div className="py-24 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Join Our Community
+          </h2>
+          <p className="text-lg text-gray-700 text-center mb-8">
+            Stay updated with the latest features and tips for managing your
+            business money.
+          </p>
+          <NewsletterSignup />
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            What Our Users Say
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="bg-white rounded-2xl p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-indigo-600 font-bold text-xl">S</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Sarah M.</div>
+                  <div className="text-sm text-gray-600">Vegetable Seller</div>
+                </div>
+              </div>
+              <p className="text-gray-700 mb-6 font-semibold text-lg">
+                "This app is so easy! I can finally see my daily profit and I don't lose my records anymore."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-indigo-600 font-bold text-xl">S</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Sarah M.</div>
+                  <div className="text-sm text-gray-600">Vegetable Seller</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-green-600 font-bold text-xl">M</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Mary A.</div>
+                  <div className="text-sm text-gray-600">Clothing Shop Owner</div>
+                </div>
+              </div>
+              <p className="text-gray-700 mb-6 font-semibold text-lg">
+                "Before, I used a notebook and always made mistakes. Now, with the pictures, it is very simple to track my business."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-green-600 font-bold text-xl">M</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Mary A.</div>
+                  <div className="text-sm text-gray-600">Clothing Shop Owner</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-purple-600 font-bold text-xl">L</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Lydia K.</div>
+                  <div className="text-sm text-gray-600">Hair Salon Owner</div>
+                </div>
+              </div>
+              <p className="text-gray-700 mb-6 font-semibold text-lg">
+                "I feel more in control of my money. I can see what I spend on transport and stock, and plan better."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-purple-600 font-bold text-xl">L</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Lydia K.</div>
+                  <div className="text-sm text-gray-600">Hair Salon Owner</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <FAQ />
+
+      {/* Contact Section */}
+      <ContactSection />
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-white font-bold text-lg">M</span>
+            </div>
+            <span className="text-xl font-bold">Mama Ledger</span>
+          </div>
+          <p className="text-gray-400 max-w-md mx-auto mb-8">
+            A simple and free tool to help you track your business money.
+          </p>
+          <a
+            href="#contact"
+            className="text-indigo-300 hover:text-white transition-colors"
+          >
+            Contact Us
+          </a>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-gray-400">
+            <p>&copy; 2024 Mama Ledger. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
