@@ -311,6 +311,10 @@ export default function BookkeepingPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'category'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined, to: Date | undefined }>({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: new Date()
+  });
   
   const router = useRouter()
 
@@ -355,7 +359,7 @@ export default function BookkeepingPage() {
       fetchCategories()
       fetchTransactions()
     }
-  }, [user])
+  }, [user, dateRange]) // Refetch when dateRange changes
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -389,12 +393,21 @@ export default function BookkeepingPage() {
       if (!user?.id) return
       
       setLoading(true)
-      const { data, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
+
+      if (view === 'history' && dateRange.from) {
+        query = query.gte('created_at', dateRange.from.toISOString())
+      }
+      if (view === 'history' && dateRange.to) {
+        query = query.lte('created_at', dateRange.to.toISOString())
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(view === 'history' ? 100 : 50); // a bit more for history view
 
       if (error) throw error
       setTransactions(data || [])
@@ -735,7 +748,31 @@ export default function BookkeepingPage() {
 
           {/* Filters and Search */}
           <div className="bg-white p-6 rounded-xl shadow-sm mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* Date Range */}
+              <div className="md:col-span-1 grid grid-cols-2 gap-2">
+                <div>
+                  <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">From</label>
+                  <input
+                    type="date"
+                    id="start-date"
+                    value={dateRange.from ? dateRange.from.toISOString().split('T')[0] : ''}
+                    onChange={e => setDateRange(prev => ({ ...prev, from: e.target.value ? new Date(e.target.value) : undefined }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">To</label>
+                  <input
+                    type="date"
+                    id="end-date"
+                    value={dateRange.to ? dateRange.to.toISOString().split('T')[0] : ''}
+                    onChange={e => setDateRange(prev => ({ ...prev, to: e.target.value ? new Date(e.target.value) : undefined }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+              
               {/* Type Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>

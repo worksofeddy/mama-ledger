@@ -37,10 +37,8 @@ interface Loan {
   created_at: string
   updated_at: string
   // Joined data
-  group?: {
+  groups?: { // Changed from group to groups to match Supabase response
     name: string
-    description: string
-    interest_rate: number
   }
   borrower?: {
     email: string
@@ -155,9 +153,7 @@ export default function LoansPage() {
         .from('loans')
         .select(`
           *,
-          group:groups(name),
-          borrower:borrower_id(email, user_profiles(first_name, last_name)),
-          approver:approved_by(email, user_profiles(first_name, last_name))
+          groups ( name )
         `)
         .in('group_id', groupIds)
         .order('created_at', { ascending: false })
@@ -376,7 +372,7 @@ export default function LoansPage() {
     const matchesStatus = filterStatus === 'all' || loan.status === filterStatus
     const matchesSearch = searchTerm === '' || 
       loan.purpose?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.group?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.groups?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.borrower?.user_profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.borrower?.user_profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
     
@@ -521,15 +517,18 @@ export default function LoansPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {loan.group?.name || 'Unknown Group'}
+                          {loan.groups?.name || 'Unknown Group'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {loan.borrower?.user_profiles?.first_name} {loan.borrower?.user_profiles?.last_name}
+                          {loan.borrower?.user_profiles?.first_name ? 
+                            `${loan.borrower.user_profiles.first_name} ${loan.borrower.user_profiles.last_name}` :
+                            'Loading...'
+                          }
                         </div>
                         <div className="text-sm text-gray-500">
-                          {loan.borrower?.email}
+                          {loan.borrower?.email || loan.borrower_id}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
