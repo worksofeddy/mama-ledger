@@ -41,7 +41,6 @@ async function getGroups(request: NextRequest) {
 
     // Check permissions
     requirePermission(adminUser, 'read_groups');
-    */
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);

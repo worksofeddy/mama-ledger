@@ -41,7 +41,6 @@ async function getUsers(request: NextRequest) {
 
     // Check permissions
     requirePermission(adminUser, 'read_users');
-    */
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
