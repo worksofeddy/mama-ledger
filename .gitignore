@@ -202,3 +202,97 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 turbo-build.log*
+
+# Local Netlify folder
+.netlify
+
+# Development and Debug Files
+debug-*.js
+debug-*.sql
+test-*.js
+test-*.html
+test-*.sh
+*-debug.sql
+*-fix.sql
+*-test.sql
+v*.sql
+emergency-*.sql
+manual-*.sql
+verify-*.sql
+setup-development-*.sql
+
+# Debug HTML files
+public/debug-*.html
+public/test-*.html
+
+# Backup files
+*.backup
+*.bak
+.env.local.backup
+
+# Temporary development files
+*.tmp
+*.temp
+*.orig
+*.rej
+
+# Development scripts
+debug-*.sh
+test-*.sh
+setup-*.sh
+
+# Version control files (if any)
+*.vscode
+*.idea
+
+# Local development overrides
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Additional development files
+*.dev
+*.development
+*.local
+*.debug
+
+# Production deployment files (keep only essential)
+# Uncomment if you want to ignore deployment docs in production
+# DEPLOYMENT-*.md
+# NETLIFY-DEPLOYMENT.md
+# DEPLOYMENT-SUMMARY.md
+
+# Database migration files (keep only production schema)
+# Uncomment if you want to ignore all SQL files except main schema
+# *.sql
+# !supabase-schema.sql
+# !setup-storage.sql
+
+# Documentation files (optional - uncomment if not needed in production)
+# IMPLEMENTATION_GUIDE.md
+# SCALABLE_ADMIN_ARCHITECTURE.md
+# PERFORMANCE_OPTIMIZATION.md
+# SECURITY-CHECKLIST.md
+# ENHANCEMENTS_SUMMARY.md
+# FEATURES-README.md
+
+# IDE and Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Package manager files
+package-lock.json.backup
+yarn.lock.backup
+pnpm-lock.yaml.backup

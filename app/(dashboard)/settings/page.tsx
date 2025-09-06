@@ -6,7 +6,8 @@ import { User } from '@supabase/supabase-js'
 
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null)
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [bio, setBio] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(true)
@@ -20,17 +21,18 @@ export default function SettingsPage() {
       if (session) {
         setUser(session.user)
         const { data: profile, error } = await supabase
-          .from('users')
-          .select('full_name, bio, phone_number')
+          .from('user_profiles')
+          .select('first_name, last_name, bio, phone')
           .eq('id', session.user.id)
           .single()
 
         if (error) {
           console.error('Error fetching profile:', error)
         } else if (profile) {
-          setFullName(profile.full_name || '')
+          setFirstName(profile.first_name || '')
+          setLastName(profile.last_name || '')
           setBio(profile.bio || '')
-          setPhoneNumber(profile.phone_number || '')
+          setPhoneNumber(profile.phone || '')
         }
       }
       setLoading(false)
@@ -46,11 +48,12 @@ export default function SettingsPage() {
     setMessage('')
     
     const { error } = await supabase
-      .from('users')
+      .from('user_profiles')
       .update({
-        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
         bio: bio,
-        phone_number: phoneNumber,
+        phone: phoneNumber,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.id)
@@ -98,11 +101,11 @@ export default function SettingsPage() {
               <div className="flex items-center space-x-6">
                 <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
                   <span className="text-2xl font-bold text-indigo-600">
-                    {fullName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    {firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">{fullName || 'Your Name'}</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{`${firstName} ${lastName}` || 'Your Name'}</h3>
                   <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
               </div>
@@ -133,19 +136,33 @@ export default function SettingsPage() {
                 <p className="mt-2 text-xs text-gray-500">Email address cannot be changed for security reasons.</p>
               </div>
               
-              {/* Full Name Field */}
+              {/* First Name Field */}
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name
                 </label>
                 <input
-                  id="fullName"
+                  id="firstName"
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your first name"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  required
+                />
+              </div>
+
+              {/* Last Name Field */}
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your last name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                 />
               </div>
 

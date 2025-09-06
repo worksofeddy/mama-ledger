@@ -13,7 +13,6 @@
     "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "dependencies": {
-    "@auth/core": "^0.34.2",
     "@auth/supabase-adapter": "^1.10.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
@@ -22,10 +21,11 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
-    "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-phone-number-input": "^3.4.12",
+    "react-window": "^2.0.2",
+    "react-window-infinite-loader": "^1.0.10",
     "recharts": "^3.1.2",
     "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.8"

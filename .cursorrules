@@ -1,0 +1,147 @@
+# Mama Ledger - Cursor AI Rules
+
+## Project Overview
+This is a financial management application built with Next.js 15, Supabase, and TypeScript. It's designed for table banking, group savings, and personal finance management.
+
+## Tech Stack
+- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Auth, RLS)
+- **Authentication**: Supabase Auth with Row Level Security
+- **Database**: PostgreSQL with optimized queries and caching
+- **UI**: Lucide React icons, Recharts for data visualization
+- **Testing**: Jest, React Testing Library
+
+## Code Style & Standards
+- Use TypeScript for all new files
+- Follow Next.js 15 App Router conventions
+- Use Tailwind CSS for styling
+- Implement proper error handling with try-catch blocks
+- Use React hooks (useState, useEffect, useCallback, useMemo) appropriately
+- Follow the existing file structure and naming conventions
+
+## File Structure
+```
+app/
+├── (auth)/          # Authentication pages
+├── (dashboard)/     # Main application pages
+├── (bookkeeping)/   # Financial tracking
+├── api/            # API routes
+├── components/     # Reusable UI components
+├── lib/           # Utilities and configurations
+├── hooks/         # Custom React hooks
+├── store/         # State management
+└── types/         # TypeScript type definitions
+```
+
+## Database Schema
+- **user_profiles**: User information with roles (user, admin)
+- **groups**: Table banking groups with contributions
+- **transactions**: Financial transactions
+- **contributions**: Group contributions and merry-go-round
+- **loans**: Group loans and repayments
+- **notifications**: User notifications
+
+## Security & Authentication (CRITICAL - Financial Data)
+- Always use Supabase RLS policies with strict access controls
+- Implement proper authentication checks in ALL API routes
+- Use server-side authentication for admin functions
+- NEVER expose sensitive financial data in client-side code
+- Implement comprehensive rate limiting for API endpoints
+- Use HTTPS everywhere (enforce SSL/TLS)
+- Implement proper session management with secure cookies
+- Use environment variables for all sensitive configuration
+- Never log sensitive data (passwords, financial amounts, PII)
+- Implement proper input validation and sanitization
+- Use parameterized queries to prevent SQL injection
+- Implement CSRF protection
+- Use secure headers (CSP, HSTS, X-Frame-Options)
+- Encrypt sensitive data at rest and in transit
+- Implement proper audit logging for financial transactions
+- Use multi-factor authentication for admin accounts
+- Implement account lockout policies
+- Regular security audits and penetration testing
+- Follow OWASP security guidelines
+- Implement data encryption for PII and financial data
+
+## Performance Guidelines
+- Use database-level pagination for large datasets
+- Implement caching for frequently accessed data
+- Use parallel queries where possible
+- Optimize images and assets
+- Implement proper loading states
+
+## API Development (Security-First)
+- Use Next.js API routes with proper error handling
+- Implement comprehensive rate limiting and authentication
+- Use TypeScript interfaces for request/response types
+- Follow RESTful conventions
+- Implement proper HTTP status codes
+- Validate and sanitize ALL input data
+- Use parameterized queries (NEVER string concatenation)
+- Implement request size limits
+- Use proper CORS configuration
+- Implement API versioning for security updates
+- Log all API access attempts (without sensitive data)
+- Implement proper error handling (don't leak system info)
+- Use secure HTTP headers
+- Implement request/response encryption for sensitive endpoints
+
+## Component Development
+- Create reusable, composable components
+- Use proper TypeScript props interfaces
+- Implement loading and error states
+- Follow accessibility best practices
+- Use Tailwind CSS for consistent styling
+
+## Testing
+- Write unit tests for utility functions
+- Test API routes with proper mocking
+- Test React components with user interactions
+- Maintain good test coverage
+
+## Admin Panel
+- Implement multi-level access control (user, admin, super-admin)
+- Use enterprise-scale optimizations for large datasets
+- Implement proper data masking based on access levels
+- Use caching and rate limiting for performance
+
+## Error Handling
+- Always wrap async operations in try-catch
+- Provide meaningful error messages to users
+- Log errors appropriately for debugging
+- Implement fallback UI states
+
+## Code Quality
+- Use meaningful variable and function names
+- Add JSDoc comments for complex functions
+- Keep functions small and focused
+- Avoid deep nesting and complex logic
+- Use TypeScript strict mode
+
+## Git & Deployment
+- Use meaningful commit messages
+- Test thoroughly before pushing to production
+- Ensure environment variables are properly configured
+- Verify database migrations and RLS policies
+
+## Common Patterns
+- Use Supabase client for database operations
+- Implement proper loading states with React hooks
+- Use Tailwind CSS classes for responsive design
+- Follow the existing authentication patterns
+- Use the established error handling patterns
+
+## When Making Changes
+1. Ensure TypeScript compilation passes
+2. Test the functionality thoroughly
+3. Check for any console errors
+4. Verify authentication and permissions
+5. Test on different screen sizes
+6. Ensure proper error handling
+
+## Admin Dashboard Specific
+- Use the established admin authentication system
+- Implement proper data visualization with Recharts
+- Use the MetricCard and TimePeriodSelector components
+- Follow the established caching and rate limiting patterns
+- Ensure proper access control for sensitive operations

@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/utils'
 
 interface Transaction {
   id: string
@@ -206,13 +207,13 @@ export default function DashboardPage() {
         <div className="bg-green-100 p-4 rounded-xl text-center">
           <p className="text-lg font-bold text-green-800">Money In</p>
           <p className="text-4xl font-extrabold text-green-600">
-            {data.todayIncome.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            {formatCurrency(data.todayIncome)}
           </p>
         </div>
         <div className="bg-red-100 p-4 rounded-xl text-center">
           <p className="text-lg font-bold text-red-800">Money Out</p>
           <p className="text-4xl font-extrabold text-red-600">
-            {data.todayExpense.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            {formatCurrency(data.todayExpense)}
           </p>
         </div>
       </div>
@@ -220,7 +221,7 @@ export default function DashboardPage() {
       <div className="bg-indigo-100 p-4 rounded-xl text-center mb-8">
         <p className="text-lg font-bold text-indigo-800">Today's Profit</p>
         <p className={`text-5xl font-extrabold ${data.todayProfit >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
-          {data.todayProfit.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+          {formatCurrency(data.todayProfit)}
         </p>
       </div>
 

@@ -6,12 +6,16 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X, User as UserIcon, LogOut, Settings, Shield } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
+import EnvironmentChecker from '../components/EnvironmentChecker'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/bookkeeping', label: 'Daily Money' },
+  { href: '/groups', label: 'Table Banking' },
+  { href: '/loans', label: 'Loans' },
   { href: '/budget', label: 'Budget Planning' },
   { href: '/goals', label: 'Financial Goals' },
+  { href: '/analytics', label: 'Analytics' },
   { href: '/receipts', label: 'Photo Receipts' },
   { href: '/reports', label: 'Reports & Export' },
   { href: '/notifications', label: 'Notifications' },
@@ -19,9 +23,10 @@ const navLinks = [
 ]
 
 interface UserProfile {
-  full_name: string
-  avatar_url: string
-  role: string
+  first_name: string | null
+  last_name: string | null
+  avatar_url: string | null
+  role: string | null
 }
 
 export default function DashboardLayout({
@@ -38,21 +43,49 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setUser(session.user)
-        const { data: userProfile, error } = await supabase
-          .from('users')
-          .select('full_name, avatar_url, role')
-          .eq('id', session.user.id)
-          .single()
-        
-        if (error) {
-          console.error('Error fetching user profile:', error)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setUser(session.user)
+          
+          // Try to get user profile, but handle gracefully if table doesn't exist
+          try {
+            const { data: userProfile, error } = await supabase
+              .from('user_profiles')
+              .select('first_name, last_name, avatar_url, role')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (error) {
+              console.warn('User profile not found, using defaults:', error.message)
+              // Set a default profile if the query fails
+              setProfile({
+                first_name: session.user.user_metadata?.full_name?.split(' ')[0] || null,
+                last_name: session.user.user_metadata?.full_name?.split(' ')[1] || null,
+                avatar_url: session.user.user_metadata?.avatar_url || null,
+                role: 'user' // Default role
+              })
+            } else {
+              setProfile({
+                ...userProfile,
+                role: userProfile.role || 'user' // Use role from DB or default
+              })
+            }
+          } catch (tableError) {
+            console.warn('user_profiles table may not exist, using auth user data:', tableError)
+            // Fallback to auth user metadata
+            setProfile({
+              first_name: session.user.user_metadata?.full_name?.split(' ')[0] || null,
+              last_name: session.user.user_metadata?.full_name?.split(' ')[1] || null,
+              avatar_url: session.user.user_metadata?.avatar_url || null,
+              role: 'user' // Default role
+            })
+          }
         } else {
-          setProfile(userProfile)
+          router.push('/login')
         }
-      } else {
+      } catch (error) {
+        console.error('Error in fetchUser:', error)
         router.push('/login')
       }
     }
@@ -101,6 +134,7 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <EnvironmentChecker />
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -121,7 +155,7 @@ export default function DashboardLayout({
                 onClick={() => setProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100"
               >
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">{profile?.full_name || user?.email}</span>
+                <span className="text-sm font-medium text-gray-700 hidden sm:block">{profile?.first_name || user?.email}</span>
                 <div className="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
                   <UserIcon size={20} className="text-indigo-600" />
                 </div>

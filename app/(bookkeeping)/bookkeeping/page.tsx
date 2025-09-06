@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/utils'
 import { TrendingUp, TrendingDown, Calendar, Search, Filter, Plus, ArrowLeft, Clock, DollarSign, Target, BarChart3 } from 'lucide-react'
 
 interface Category {
@@ -203,7 +204,7 @@ function TransactionCard({
             <p className={`text-2xl font-bold ${
               isIncome ? 'text-green-600' : 'text-red-600'
             }`}>
-              {isIncome ? '+' : '-'}${transaction.amount.toLocaleString()}
+              {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
             </p>
           </div>
           
@@ -257,7 +258,7 @@ function SummaryCards({ transactions }: { transactions: Transaction[] }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-green-100 text-sm font-medium">Today's Income</p>
-            <p className="text-3xl font-bold">${todayIncome.toLocaleString()}</p>
+            <p className="text-3xl font-bold">{formatCurrency(todayIncome)}</p>
           </div>
           <TrendingUp className="w-8 h-8 text-green-200" />
         </div>
@@ -267,7 +268,7 @@ function SummaryCards({ transactions }: { transactions: Transaction[] }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-red-100 text-sm font-medium">Today's Expenses</p>
-            <p className="text-3xl font-bold">${todayExpenses.toLocaleString()}</p>
+            <p className="text-3xl font-bold">{formatCurrency(todayExpenses)}</p>
           </div>
           <TrendingDown className="w-8 h-8 text-red-200" />
         </div>
@@ -281,7 +282,7 @@ function SummaryCards({ transactions }: { transactions: Transaction[] }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-blue-100 text-sm font-medium">Today's Profit</p>
-            <p className="text-3xl font-bold">${todayProfit.toLocaleString()}</p>
+            <p className="text-3xl font-bold">{formatCurrency(todayProfit)}</p>
           </div>
           <Target className="w-8 h-8 text-blue-200" />
         </div>

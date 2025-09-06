@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/utils'
 import { Download, FileText, TrendingUp, Calendar, DollarSign, BarChart3 } from 'lucide-react'
 
 interface ReportData {
@@ -161,14 +162,14 @@ Generated: ${new Date().toLocaleDateString()}
 Period: ${dateRange}
 
 Summary:
-- Total Income: $${reportData?.totalIncome.toLocaleString()}
-- Total Expenses: $${reportData?.totalExpenses.toLocaleString()}
-- Net Profit: $${reportData?.netProfit.toLocaleString()}
+- Total Income: ${formatCurrency(reportData?.totalIncome || 0)}
+- Total Expenses: ${formatCurrency(reportData?.totalExpenses || 0)}
+- Net Profit: ${formatCurrency(reportData?.netProfit || 0)}
 - Transactions: ${reportData?.transactionCount}
 
 Top Categories:
 ${reportData?.topCategories.map(cat => 
-  `- ${cat.name}: $${cat.amount.toLocaleString()} (${cat.count} transactions)`
+  `- ${cat.name}: ${formatCurrency(cat.amount)} (${cat.count} transactions)`
 ).join('\n')}
       `.trim()
 
@@ -279,7 +280,7 @@ ${reportData?.topCategories.map(cat =>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Income</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${reportData.totalIncome.toLocaleString()}
+                  {formatCurrency(reportData.totalIncome)}
                 </p>
               </div>
             </div>
@@ -293,7 +294,7 @@ ${reportData?.topCategories.map(cat =>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Expenses</p>
                 <p className="text-2xl font-bold text-red-600">
-                  ${reportData.totalExpenses.toLocaleString()}
+                  {formatCurrency(reportData.totalExpenses)}
                 </p>
               </div>
             </div>
@@ -307,7 +308,7 @@ ${reportData?.topCategories.map(cat =>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Net Profit</p>
                 <p className={`text-2xl font-bold ${reportData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ${reportData.netProfit.toLocaleString()}
+                  {formatCurrency(reportData.netProfit)}
                 </p>
               </div>
             </div>
@@ -406,7 +407,7 @@ ${reportData?.topCategories.map(cat =>
                       <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                         <span className="font-medium text-green-800">{category.name}</span>
                         <div className="text-right">
-                          <div className="text-green-600 font-bold">${category.amount.toLocaleString()}</div>
+                          <div className="text-green-600 font-bold">{formatCurrency(category.amount)}</div>
                           <div className="text-xs text-green-500">{category.count} transactions</div>
                         </div>
                       </div>
@@ -425,7 +426,7 @@ ${reportData?.topCategories.map(cat =>
                       <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                         <span className="font-medium text-red-800">{category.name}</span>
                         <div className="text-right">
-                          <div className="text-red-600 font-bold">${category.amount.toLocaleString()}</div>
+                          <div className="text-red-600 font-bold">{formatCurrency(category.amount)}</div>
                           <div className="text-xs text-red-500">{category.count} transactions</div>
                         </div>
                       </div>
@@ -468,7 +469,7 @@ ${reportData?.topCategories.map(cat =>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                       transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString()}
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </td>
                   </tr>
                 ))}

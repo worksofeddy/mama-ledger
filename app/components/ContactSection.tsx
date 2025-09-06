@@ -78,7 +78,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">Email</h4>
-                  <p className="text-gray-600">support@mamaledger.com</p>
+                  <p className="text-gray-600">info@sheeofoundation.org</p>
                 </div>
               </div>
 
@@ -90,7 +90,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">Phone</h4>
-                  <p className="text-gray-600">+1 (555) 123-4567</p>
+                  <p className="text-gray-600">+254 719 254887</p>
                 </div>
               </div>
 
@@ -103,7 +103,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">Office</h4>
-                  <p className="text-gray-600">123 Financial District<br />San Francisco, CA 94105</p>
+                  <p className="text-gray-600">107 Lower Kabete Rd<br />Springs Valley, Nairobi, Kenya</p>
                 </div>
               </div>
             </div>
@@ -111,8 +111,8 @@ export default function ContactSection() {
             <div className="mt-8">
               <h4 className="font-medium text-gray-900 mb-4">Business Hours</h4>
               <div className="space-y-2 text-gray-600">
-                <p>Monday - Friday: 9:00 AM - 6:00 PM PST</p>
-                <p>Saturday: 10:00 AM - 4:00 PM PST</p>
+                <p>Monday - Friday: 9:00 AM - 3:00 PM EAT</p>
+                <p>Saturday: Closed</p>
                 <p>Sunday: Closed</p>
               </div>
             </div>
@@ -168,9 +168,10 @@ export default function ContactSection() {
                   <option value="">Select a subject</option>
                   <option value="general">General Inquiry</option>
                   <option value="support">Technical Support</option>
-                  <option value="billing">Billing Question</option>
-                  <option value="feature">Feature Request</option>
+                  <option value="group">Group Management</option>
+                  <option value="loan">Loan Information</option>
                   <option value="partnership">Partnership</option>
+                  <option value="training">Training & Support</option>
                 </select>
               </div>
 

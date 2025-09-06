@@ -2,32 +2,32 @@ describe('Financial Calculations', () => {
   describe('Currency Formatting', () => {
     it('formats positive amounts correctly', () => {
       const amount = 1234.56
-      const formatted = amount.toLocaleString('en-US', { 
+      const formatted = amount.toLocaleString('en-KE', { 
         style: 'currency', 
-        currency: 'USD' 
+        currency: 'KES' 
       })
       
-      expect(formatted).toBe('$1,234.56')
+      expect(formatted).toBe('Ksh\u00A01,234.56')
     })
 
     it('formats zero amounts correctly', () => {
       const amount = 0
-      const formatted = amount.toLocaleString('en-US', { 
+      const formatted = amount.toLocaleString('en-KE', { 
         style: 'currency', 
-        currency: 'USD' 
+        currency: 'KES' 
       })
       
-      expect(formatted).toBe('$0.00')
+      expect(formatted).toBe('Ksh\u00A00.00')
     })
 
     it('formats negative amounts correctly', () => {
       const amount = -567.89
-      const formatted = amount.toLocaleString('en-US', { 
+      const formatted = amount.toLocaleString('en-KE', { 
         style: 'currency', 
-        currency: 'USD' 
+        currency: 'KES' 
       })
       
-      expect(formatted).toBe('-$567.89')
+      expect(formatted).toBe('-Ksh\u00A0567.89')
     })
   })
 
