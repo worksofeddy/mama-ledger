@@ -1,7 +1,7 @@
 'use client'
 
-import ScalableAdminDashboard from '../../components/admin/ScalableAdminDashboard'
+import SimpleAdminDashboard from '../../components/admin/SimpleAdminDashboard'
 
 export default function AdminPage() {
-  return <ScalableAdminDashboard />
+  return <SimpleAdminDashboard />
 }

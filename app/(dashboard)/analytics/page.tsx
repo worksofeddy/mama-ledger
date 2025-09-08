@@ -114,6 +114,13 @@ export default function AnalyticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('30')
   const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'predictions'>('overview')
   const [error, setError] = useState('')
+  const [analyticsScope, setAnalyticsScope] = useState<'personal' | 'group' | 'member'>('personal')
+  const [selectedGroup, setSelectedGroup] = useState<any>(null)
+  const [selectedMember, setSelectedMember] = useState<any>(null)
+  const [groups, setGroups] = useState<any[]>([])
+  const [groupMembers, setGroupMembers] = useState<any[]>([])
+  const [userRole, setUserRole] = useState<string>('user')
+  const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -122,9 +129,16 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (user?.id) {
+      fetchGroups()
       fetchAnalytics()
     }
-  }, [user, selectedPeriod])
+  }, [user, selectedPeriod, analyticsScope, selectedGroup, selectedMember])
+
+  useEffect(() => {
+    if (selectedGroup && analyticsScope === 'member') {
+      fetchGroupMembers()
+    }
+  }, [selectedGroup, analyticsScope])
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -132,6 +146,101 @@ export default function AnalyticsPage() {
       router.push('/login')
     } else {
       setUser(session.user)
+      
+      // Check if user is admin by looking at user_profiles role
+      try {
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+
+        if (error) {
+          console.error('Error fetching user profile:', error)
+          setUserRole('user')
+          setIsAdmin(false)
+        } else {
+          const userRole = profile?.role || 'user'
+          setUserRole(userRole)
+          setIsAdmin(userRole === 'admin' || userRole === 'super_admin' || userRole === 'moderator')
+        }
+      } catch (err) {
+        console.error('Error checking user role:', err)
+        setUserRole('user')
+        setIsAdmin(false)
+      }
+    }
+  }
+
+  const fetchGroups = async () => {
+    try {
+      let groupsQuery
+
+      if (isAdmin) {
+        // Admins can see all groups
+        groupsQuery = supabase
+          .from('groups')
+          .select('*')
+          .order('created_at', { ascending: false })
+      } else {
+        // Regular users can only see groups they're a member of
+        groupsQuery = supabase
+          .from('groups')
+          .select(`
+            *,
+            group_members!inner(
+              user_id,
+              role
+            )
+          `)
+          .eq('group_members.user_id', user.id)
+      }
+
+      const { data: groupsData, error } = await groupsQuery
+
+      if (error) throw error
+      setGroups(groupsData || [])
+    } catch (err) {
+      console.error('Error fetching groups:', err)
+    }
+  }
+
+  const fetchGroupMembers = async () => {
+    try {
+      if (!selectedGroup) return
+
+      // Check if user is a member of this group (unless they're an admin)
+      if (!isAdmin) {
+        const { data: userMembership, error: membershipError } = await supabase
+          .from('group_members')
+          .select('user_id')
+          .eq('group_id', selectedGroup.id)
+          .eq('user_id', user.id)
+          .single()
+
+        if (membershipError || !userMembership) {
+          console.error('User is not a member of this group')
+          setGroupMembers([])
+          return
+        }
+      }
+
+      const { data: membersData, error } = await supabase
+        .from('group_members')
+        .select(`
+          *,
+          user_profiles!inner(
+            id,
+            email,
+            role
+          )
+        `)
+        .eq('group_id', selectedGroup.id)
+
+      if (error) throw error
+      setGroupMembers(membersData || [])
+    } catch (err) {
+      console.error('Error fetching group members:', err)
     }
   }
 
@@ -141,35 +250,194 @@ export default function AnalyticsPage() {
       setError('')
 
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session || !user?.id) return
 
-      // Fetch analytics overview
-      const analyticsResponse = await fetch(`/api/analytics/overview?period=${selectedPeriod}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
+      // Calculate date range
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - parseInt(selectedPeriod))
+
+      // Determine which user IDs to fetch transactions for
+      let userIds: string[] = []
+      
+      if (analyticsScope === 'personal') {
+        userIds = [user.id]
+      } else if (analyticsScope === 'group' && selectedGroup) {
+        // For group analytics, only allow if user is a member (or admin)
+        if (isAdmin || groupMembers.some(member => member.user_id === user.id)) {
+          const memberIds = groupMembers.map(member => member.user_id)
+          userIds = memberIds
+        } else {
+          throw new Error('You can only view analytics for groups you are a member of')
         }
-      })
-
-      if (!analyticsResponse.ok) {
-        throw new Error('Failed to fetch analytics')
+      } else if (analyticsScope === 'member' && selectedMember) {
+        // For member analytics, only allow if user is in the same group (or admin)
+        if (isAdmin || groupMembers.some(member => member.user_id === user.id)) {
+          userIds = [selectedMember.user_id]
+        } else {
+          throw new Error('You can only view analytics for members in your groups')
+        }
+      } else {
+        userIds = [user.id] // fallback to personal
       }
 
-      const analyticsResult = await analyticsResponse.json()
-      setAnalyticsData(analyticsResult.analytics)
+      // Fetch transactions for the selected scope
+      let transactionsQuery = supabase
+        .from('transactions')
+        .select('*')
+        .in('user_id', userIds)
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: false })
 
-      // Fetch predictions
-      const predictionsResponse = await fetch('/api/analytics/predictions?months=6', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
+      const { data: transactions, error: transactionsError } = await transactionsQuery
+
+      if (transactionsError) throw transactionsError
+
+      // Calculate analytics data
+      const totalIncome = transactions?.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) || 0
+      const totalExpenses = transactions?.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0) || 0
+      const netIncome = totalIncome - totalExpenses
+      const savingsRate = totalIncome > 0 ? (netIncome / totalIncome) * 100 : 0
+
+      // Category breakdown
+      const categoryBreakdown = transactions?.reduce((acc, transaction) => {
+        const key = `${transaction.category}_${transaction.type}`
+        if (!acc[key]) {
+          acc[key] = { category: transaction.category, type: transaction.type, amount: 0, count: 0 }
         }
+        acc[key].amount += transaction.amount
+        acc[key].count += 1
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      // Monthly trends (last 6 months)
+      const sixMonthsAgo = new Date()
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+      
+      const { data: monthlyTransactions } = await supabase
+        .from('transactions')
+        .select('type, amount, created_at')
+        .in('user_id', userIds)
+        .gte('created_at', sixMonthsAgo.toISOString())
+        .order('created_at', { ascending: true })
+
+      const monthlyData = monthlyTransactions?.reduce((acc, transaction) => {
+        const month = new Date(transaction.created_at).toISOString().substring(0, 7)
+        if (!acc[month]) {
+          acc[month] = { income: 0, expenses: 0 }
+        }
+        if (transaction.type === 'income') {
+          acc[month].income += transaction.amount
+        } else {
+          acc[month].expenses += transaction.amount
+        }
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      // Spending patterns by day of week
+      const dayOfWeekSpending = transactions?.filter(t => t.type === 'expense').reduce((acc, transaction) => {
+        const day = new Date(transaction.created_at).getDay()
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        const dayName = dayNames[day]
+        if (!acc[dayName]) {
+          acc[dayName] = { amount: 0, count: 0 }
+        }
+        acc[dayName].amount += transaction.amount
+        acc[dayName].count += 1
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      // Top categories
+      const topCategoriesData = transactions?.filter(t => t.type === 'expense').reduce((acc, transaction) => {
+        if (!acc[transaction.category]) {
+          acc[transaction.category] = { amount: 0, count: 0 }
+        }
+        acc[transaction.category].amount += transaction.amount
+        acc[transaction.category].count += 1
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      // Cash flow analysis
+      let runningBalance = 0
+      const cashFlowData = transactions?.map(transaction => {
+        if (transaction.type === 'income') {
+          runningBalance += transaction.amount
+        } else {
+          runningBalance -= transaction.amount
+        }
+        return {
+          date: transaction.created_at.split('T')[0],
+          amount: transaction.amount,
+          type: transaction.type,
+          balance: runningBalance
+        }
+      }) || []
+
+      // Generate insights
+      const insights = generateInsights({
+        totalIncome,
+        totalExpenses,
+        netIncome,
+        savingsRate,
+        categoryBreakdown,
+        monthlyData,
+        dayOfWeekSpending,
+        topCategoriesData,
+        cashFlowData
       })
 
-      if (predictionsResponse.ok) {
-        const predictionsResult = await predictionsResponse.json()
-        setPredictionsData(predictionsResult.predictions)
+      const analyticsData: AnalyticsData = {
+        period: {
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          days: parseInt(selectedPeriod)
+        },
+        summary: {
+          totalIncome,
+          totalExpenses,
+          netIncome,
+          savingsRate: Math.round(savingsRate * 100) / 100,
+          transactionCount: transactions?.length || 0
+        },
+        categoryBreakdown: Object.values(categoryBreakdown),
+        monthlyTrends: Object.entries(monthlyData).map(([month, data]) => ({
+          month,
+          ...data as any,
+          net: (data as any).income - (data as any).expenses
+        })),
+        spendingPatterns: Object.entries(dayOfWeekSpending).map(([day, data]) => ({
+          day,
+          ...data as any,
+          average: (data as any).count > 0 ? (data as any).amount / (data as any).count : 0
+        })),
+        topCategories: Object.entries(topCategoriesData)
+          .map(([category, data]) => ({ category, ...data as any }))
+          .sort((a, b) => b.amount - a.amount)
+          .slice(0, 10),
+        cashFlow: cashFlowData,
+        insights
       }
+
+      setAnalyticsData(analyticsData)
+
+      // Generate simple predictions (basic forecasting)
+      const predictionsData: PredictionsData = {
+        nextMonthIncome: totalIncome * 1.05, // 5% growth assumption
+        nextMonthExpenses: totalExpenses * 1.02, // 2% growth assumption
+        nextMonthNet: (totalIncome * 1.05) - (totalExpenses * 1.02),
+        trendAnalysis: netIncome > 0 ? 'Positive cash flow trend' : 'Negative cash flow trend',
+        categoryForecasts: Object.entries(topCategoriesData).slice(0, 5).map(([category, data]) => ({
+          category,
+          predictedAmount: (data as any).amount * 1.02,
+          trend: 'Stable',
+          confidence: 'Medium'
+        })),
+        recommendations: generateRecommendations(analyticsData),
+        confidence: 'Medium'
+      }
+
+      setPredictionsData(predictionsData)
 
     } catch (err) {
       console.error('Error fetching analytics:', err)
@@ -177,6 +445,111 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Helper function to generate insights
+  const generateInsights = (data: any): Array<{
+    type: 'positive' | 'warning' | 'info'
+    title: string
+    message: string
+    icon: string
+  }> => {
+    const insights: Array<{
+      type: 'positive' | 'warning' | 'info'
+      title: string
+      message: string
+      icon: string
+    }> = []
+
+    // Savings rate insight
+    if (data.savingsRate > 20) {
+      insights.push({
+        type: 'positive',
+        title: 'Excellent Savings Rate',
+        message: `You're saving ${data.savingsRate.toFixed(1)}% of your income. Great job!`,
+        icon: 'trending-up'
+      })
+    } else if (data.savingsRate < 0) {
+      insights.push({
+        type: 'warning',
+        title: 'Spending More Than Income',
+        message: `You're spending ${Math.abs(data.savingsRate).toFixed(1)}% more than you earn. Consider reducing expenses.`,
+        icon: 'alert-triangle'
+      })
+    }
+
+    // Top spending category insight
+    const topCategory = Object.entries(data.topCategoriesData).sort(([,a], [,b]) => (b as any).amount - (a as any).amount)[0]
+    if (topCategory && data.totalExpenses > 0) {
+      insights.push({
+        type: 'info',
+        title: 'Top Spending Category',
+        message: `${topCategory[0]} accounts for ${(((topCategory[1] as any).amount / data.totalExpenses) * 100).toFixed(1)}% of your expenses.`,
+        icon: 'pie-chart'
+      })
+    }
+
+    // Spending pattern insight
+    const highestSpendingDay = Object.entries(data.dayOfWeekSpending)
+      .sort(([,a], [,b]) => (b as any).amount - (a as any).amount)[0]
+    
+    if (highestSpendingDay) {
+      insights.push({
+        type: 'info',
+        title: 'Spending Pattern',
+        message: `You spend most on ${highestSpendingDay[0]}s (Ksh ${(highestSpendingDay[1] as any).amount.toLocaleString()}).`,
+        icon: 'calendar'
+      })
+    }
+
+    return insights
+  }
+
+  // Helper function to generate recommendations
+  const generateRecommendations = (analyticsData: AnalyticsData): Array<{
+    type: string
+    title: string
+    message: string
+    priority: string
+  }> => {
+    const recommendations: Array<{
+      type: string
+      title: string
+      message: string
+      priority: string
+    }> = []
+
+    if (analyticsData.summary.savingsRate < 10) {
+      recommendations.push({
+        type: 'savings',
+        title: 'Increase Savings Rate',
+        message: 'Consider setting aside 20% of your income for savings.',
+        priority: 'High'
+      })
+    }
+
+    if (analyticsData.summary.netIncome < 0) {
+      recommendations.push({
+        type: 'budget',
+        title: 'Review Your Budget',
+        message: 'You are spending more than you earn. Review and reduce expenses.',
+        priority: 'High'
+      })
+    }
+
+    if (analyticsData.topCategories.length > 0) {
+      const topCategory = analyticsData.topCategories[0]
+      if (topCategory.amount > analyticsData.summary.totalExpenses * 0.3) {
+        recommendations.push({
+          type: 'category',
+          title: `Reduce ${topCategory.category} Spending`,
+          message: `This category represents ${((topCategory.amount / analyticsData.summary.totalExpenses) * 100).toFixed(1)}% of your expenses.`,
+          priority: 'Medium'
+        })
+      }
+    }
+
+    return recommendations
   }
 
   const getInsightIcon = (type: string) => {
@@ -244,7 +617,10 @@ export default function AnalyticsPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Advanced Analytics</h1>
-              <p className="mt-2 text-gray-600">Deep insights into your financial patterns</p>
+              <p className="mt-2 text-gray-600">
+                Deep insights into your financial patterns
+                {isAdmin && <span className="ml-2 text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Admin</span>}
+              </p>
             </div>
             <div className="flex gap-3">
               <select
@@ -265,6 +641,115 @@ export default function AnalyticsPage() {
                 Refresh
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Analytics Scope Selector */}
+        <div className="mb-6 bg-white rounded-lg shadow-sm p-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">View Analytics For:</span>
+              <select
+                value={analyticsScope}
+                onChange={(e) => {
+                  setAnalyticsScope(e.target.value as 'personal' | 'group' | 'member')
+                  setSelectedGroup(null)
+                  setSelectedMember(null)
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="personal">Personal</option>
+                {groups.length > 0 && (
+                  <>
+                    <option value="group">My Groups</option>
+                    <option value="member">Group Members</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            {analyticsScope === 'group' && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Select Group:</span>
+                <select
+                  value={selectedGroup?.id || ''}
+                  onChange={(e) => {
+                    const group = groups.find(g => g.id === e.target.value)
+                    setSelectedGroup(group || null)
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="">Choose a group...</option>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name} {!isAdmin && '(My Group)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {analyticsScope === 'member' && (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Select Group:</span>
+                  <select
+                    value={selectedGroup?.id || ''}
+                    onChange={(e) => {
+                      const group = groups.find(g => g.id === e.target.value)
+                      setSelectedGroup(group || null)
+                      setSelectedMember(null)
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="">Choose a group...</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name} {!isAdmin && '(My Group)'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedGroup && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">Select Member:</span>
+                    <select
+                      value={selectedMember?.user_id || ''}
+                      onChange={(e) => {
+                        const member = groupMembers.find(m => m.user_id === e.target.value)
+                        setSelectedMember(member || null)
+                      }}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                      <option value="">Choose a member...</option>
+                      {groupMembers.map((member) => (
+                        <option key={member.user_id} value={member.user_id}>
+                          {member.user_profiles?.email || `User ${member.user_id.slice(0, 8)}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
+
+            {(analyticsScope === 'group' || analyticsScope === 'member') && (
+              <div className="text-sm text-gray-600">
+                {analyticsScope === 'group' && selectedGroup && (
+                  <span>
+                    Showing analytics for all members of <strong>{selectedGroup.name}</strong>
+                    {!isAdmin && ' (your group)'}
+                  </span>
+                )}
+                {analyticsScope === 'member' && selectedMember && (
+                  <span>
+                    Showing analytics for <strong>{selectedMember.user_profiles?.email || `User ${selectedMember.user_id.slice(0, 8)}`}</strong>
+                    {!isAdmin && ' (fellow group member)'}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/utils'
 import { X, CreditCard, Calendar, DollarSign, AlertCircle } from 'lucide-react'
 
 interface LoanPayment {
@@ -70,7 +71,7 @@ export default function LoanPaymentModal({
           group_id: payment.loan_id, // This should be the group_id, but we need to get it from the loan
           user_id: payment.loan_id, // This should be the borrower_id
           title: 'Payment Recorded',
-          message: `Payment of KES ${paymentAmount.toLocaleString()} has been recorded for your loan.`,
+          message: `Payment of ${formatCurrency(paymentAmount)} has been recorded for your loan.`,
           notification_type: 'payment_confirmation'
         })
 

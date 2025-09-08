@@ -5,7 +5,12 @@
 -- Drop existing objects to ensure a clean slate
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
-DROP TABLE IF EXISTS public.user_profiles;
+
+-- Drop materialized views that depend on user_profiles first
+DROP MATERIALIZED VIEW IF EXISTS public.user_stats_daily CASCADE;
+
+-- Now we can safely drop the table
+DROP TABLE IF EXISTS public.user_profiles CASCADE;
 
 -- Create user_profiles table
 CREATE TABLE public.user_profiles (
@@ -13,7 +18,10 @@ CREATE TABLE public.user_profiles (
     first_name TEXT,
     last_name TEXT,
     phone TEXT,
+    bio TEXT,
     avatar_url TEXT,
+    role TEXT DEFAULT 'user',
+    last_login TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
@@ -21,6 +29,9 @@ CREATE TABLE public.user_profiles (
 ALTER TABLE public.user_profiles OWNER TO postgres;
 GRANT ALL ON TABLE public.user_profiles TO authenticated;
 GRANT ALL ON TABLE public.user_profiles TO postgres;
+
+-- Create index for role lookups
+CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON user_profiles(role);
 
 
 -- Function to create a user profile when a new user signs up
@@ -280,6 +291,32 @@ ALTER TABLE merry_go_rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loan_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_notifications ENABLE ROW LEVEL SECURITY;
+
+-- === Loan Payments Policies ===
+CREATE POLICY "Allow group members to view loan payments"
+  ON loan_payments FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM loans l
+      JOIN group_members gm ON l.group_id = gm.group_id
+      WHERE l.id = loan_payments.loan_id
+      AND gm.user_id = auth.uid()
+      AND gm.is_active = true
+    )
+  );
+
+CREATE POLICY "Allow group admins to manage loan payments"
+  ON loan_payments FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM loans l
+      JOIN group_members gm ON l.group_id = gm.group_id
+      WHERE l.id = loan_payments.loan_id
+      AND gm.user_id = auth.uid()
+      AND gm.role IN ('admin', 'treasurer')
+      AND gm.is_active = true
+    )
+  );
 
 
 -- === User Profiles Policies (Corrected) ===

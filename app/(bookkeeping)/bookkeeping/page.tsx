@@ -69,7 +69,7 @@ function QuickEntry({ onAdd }: { onAdd: (type: 'income' | 'expense', amount: num
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
           <div className="relative">
-            <span className="absolute left-3 top-3 text-gray-500">$</span>
+            <span className="absolute left-3 top-3 text-gray-500">Ksh</span>
             <input
               type="number"
               value={amount}
@@ -634,7 +634,7 @@ export default function BookkeepingPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">Amount</label>
             <div className="relative">
-              <span className="absolute left-4 top-4 text-gray-500 text-xl">$</span>
+              <span className="absolute left-4 top-4 text-gray-500 text-xl">Ksh</span>
               <input
                 type="number"
                 value={amount}

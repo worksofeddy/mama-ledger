@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
 
     // We need to reshape the data slightly to match what the frontend expects.
     const formattedGroups = groups?.map(g => ({
-      group_id: g.id,
-      group_name: g.name,
+      id: g.id,
+      name: g.name,
       description: g.description,
       contribution_amount: g.contribution_amount,
       contribution_frequency: g.contribution_frequency,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       max_members: g.max_members,
       is_private: g.is_private,
       created_at: g.created_at,
-      role: g.group_members[0]?.role || 'member'
+      userRole: g.group_members[0]?.role || 'member'
     })) || []
 
     return NextResponse.json({ 
@@ -88,24 +88,77 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const { data: new_group_id, error } = await supabase
-      .rpc('create_new_group', {
-        p_name: name,
-        p_description: description,
-        p_contribution_amount: contribution_amount,
-        p_contribution_frequency: contribution_frequency,
-        p_interest_rate: interest_rate,
-        p_max_members: max_members,
-        p_is_private: is_private,
-        p_admin_id: user.id
-      })
+    // Create group directly
+    console.log('Creating group with data:', {
+      name,
+      description,
+      admin_id: user.id,
+      contribution_amount,
+      contribution_frequency,
+      interest_rate,
+      max_members,
+      is_private
+    })
 
-    if (error) {
-      console.error('Error creating group via RPC:', error)
-      return NextResponse.json({ error: 'Failed to create group', details: error.message }, { status: 500 })
+    const { data: newGroup, error: groupError } = await supabase
+      .from('groups')
+      .insert({
+        name,
+        description,
+        admin_id: user.id,
+        contribution_amount: parseFloat(contribution_amount),
+        contribution_frequency,
+        interest_rate: parseFloat(interest_rate) || 0,
+        max_members: parseInt(max_members) || 20,
+        is_private: Boolean(is_private)
+      })
+      .select()
+      .single()
+
+    if (groupError) {
+      console.error('Error creating group:', groupError)
+      return NextResponse.json({ 
+        error: 'Failed to create group', 
+        details: groupError.message,
+        code: groupError.code,
+        hint: groupError.hint
+      }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, group: { id: new_group_id } })
+    console.log('Group created successfully:', newGroup)
+
+    // Add the creator as an admin member
+    console.log('Adding admin member:', {
+      group_id: newGroup.id,
+      user_id: user.id,
+      role: 'admin',
+      is_active: true
+    })
+
+    const { error: memberError } = await supabase
+      .from('group_members')
+      .insert({
+        group_id: newGroup.id,
+        user_id: user.id,
+        role: 'admin',
+        is_active: true
+      })
+
+    if (memberError) {
+      console.error('Error adding admin member:', memberError)
+      // Try to clean up the group if member creation fails
+      await supabase.from('groups').delete().eq('id', newGroup.id)
+      return NextResponse.json({ 
+        error: 'Failed to add admin member', 
+        details: memberError.message,
+        code: memberError.code,
+        hint: memberError.hint
+      }, { status: 500 })
+    }
+
+    console.log('Admin member added successfully')
+
+    return NextResponse.json({ success: true, group: { id: newGroup.id } })
 
   } catch (error: any) {
     console.error('Error in POST /api/groups:', error)

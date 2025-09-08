@@ -65,7 +65,7 @@ export default function HomePage() {
               <div className="text-gray-600">Active Users</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-indigo-600">$2M+</div>
+              <div className="text-3xl font-bold text-indigo-600">Ksh 2M+</div>
               <div className="text-gray-600">Tracked</div>
             </div>
             <div>

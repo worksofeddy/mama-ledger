@@ -335,9 +335,10 @@ export default function LoanDetailModal({
                     <div>
                       <p className="text-sm text-gray-500">Borrower</p>
                       <p className="font-semibold text-gray-900">
-                        {loan.borrower?.user_profiles?.first_name} {loan.borrower?.user_profiles?.last_name}
+                        {loan.borrower?.user_profiles?.first_name && loan.borrower?.user_profiles?.last_name 
+                          ? `${loan.borrower.user_profiles.first_name} ${loan.borrower.user_profiles.last_name}`
+                          : loan.borrower_id}
                       </p>
-                      <p className="text-sm text-gray-500">{loan.borrower?.email}</p>
                     </div>
                   </div>
                   

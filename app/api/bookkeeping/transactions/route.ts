@@ -99,8 +99,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
+      console.error('Transaction creation error:', error)
       return NextResponse.json(
-        { error: 'Failed to create transaction' },
+        { 
+          error: 'Failed to create transaction',
+          details: error.message,
+          code: error.code,
+          hint: error.hint
+        },
         { status: 500 }
       )
     }
