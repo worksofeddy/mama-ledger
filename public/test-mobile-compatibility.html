@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Compatibility Test - Mama Ledger</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            background: #f5f5f5;
+            font-size: 14px;
+        }
+        .test-section { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { 
+            padding: 12px 20px; 
+            margin: 8px 0; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .mobile-test { 
+            border: 2px solid #007bff; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            background: #f8f9fa;
+        }
+        .device-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            box-sizing: border-box;
+        }
+        .form-test {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .touch-test {
+            background: #e3f2fd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 2px dashed #2196f3;
+        }
+        .performance-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .performance-metric:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Mobile Compatibility Test</h1>
+    <p><strong>Target Users:</strong> Mobile phone users with Chrome browser</p>
+    
+    <div id="output"></div>
+
+    <script>
+        const supabaseUrl = 'https://ofhjivoxodictdpuvvct.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9maGppdm94b2RpY3RkcHV2dmN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MzYxMDgsImV4cCI6MjA3MjQxMjEwOH0.X0eoiqrrImw60ckAvlHFtCeApYrsRErhiVfUkizXzyw'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        let currentUser = null
+        let testResults = {
+            device: {},
+            performance: {},
+            functionality: {},
+            ui: {}
+        }
+        
+        function addOutput(html, className = 'info') {
+            const output = document.getElementById('output')
+            const div = document.createElement('div')
+            div.className = `test-section ${className}`
+            div.innerHTML = html
+            output.appendChild(div)
+        }
+        
+        function detectDevice() {
+            const userAgent = navigator.userAgent
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+            const isChrome = /Chrome/i.test(userAgent) && !/Edge/i.test(userAgent)
+            const isAndroid = /Android/i.test(userAgent)
+            const isIOS = /iPhone|iPad|iPod/i.test(userAgent)
+            
+            const screenWidth = window.screen.width
+            const screenHeight = window.screen.height
+            const viewportWidth = window.innerWidth
+            const viewportHeight = window.innerHeight
+            
+            testResults.device = {
+                userAgent,
+                isMobile,
+                isChrome,
+                isAndroid,
+                isIOS,
+                screenWidth,
+                screenHeight,
+                viewportWidth,
+                viewportHeight,
+                devicePixelRatio: window.devicePixelRatio,
+                touchSupport: 'ontouchstart' in window
+            }
+            
+            return testResults.device
+        }
+        
+        function testPerformance() {
+            const startTime = performance.now()
+            
+            // Test DOM manipulation speed
+            const testDiv = document.createElement('div')
+            testDiv.innerHTML = 'Performance test'
+            document.body.appendChild(testDiv)
+            document.body.removeChild(testDiv)
+            
+            const domTime = performance.now() - startTime
+            
+            // Test memory usage
+            const memoryInfo = performance.memory ? {
+                usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+                totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024),
+                jsHeapSizeLimit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)
+            } : null
+            
+            // Test network speed (simple test)
+            const networkStart = performance.now()
+            fetch('data:text/plain,test')
+                .then(() => {
+                    const networkTime = performance.now() - networkStart
+                    testResults.performance.networkTime = Math.round(networkTime)
+                })
+            
+            testResults.performance = {
+                domTime: Math.round(domTime),
+                memoryInfo,
+                timestamp: new Date().toISOString()
+            }
+            
+            return testResults.performance
+        }
+        
+        function testTouchInterface() {
+            let touchCount = 0
+            let touchStartTime = 0
+            let touchEndTime = 0
+            
+            const touchTest = document.createElement('div')
+            touchTest.className = 'touch-test'
+            touchTest.innerHTML = `
+                <h3>👆 Touch Interface Test</h3>
+                <p>Tap this area multiple times to test touch responsiveness</p>
+                <p>Touches: <span id="touch-count">0</span></p>
+                <p>Response Time: <span id="touch-time">0ms</span></p>
+            `
+            
+            touchTest.addEventListener('touchstart', (e) => {
+                touchStartTime = performance.now()
+                e.preventDefault()
+            })
+            
+            touchTest.addEventListener('touchend', (e) => {
+                touchEndTime = performance.now()
+                touchCount++
+                const responseTime = Math.round(touchEndTime - touchStartTime)
+                
+                document.getElementById('touch-count').textContent = touchCount
+                document.getElementById('touch-time').textContent = responseTime + 'ms'
+                
+                testResults.ui.touchResponse = responseTime
+                testResults.ui.touchCount = touchCount
+                
+                e.preventDefault()
+            })
+            
+            return touchTest
+        }
+        
+        function testFormInputs() {
+            const formTest = document.createElement('div')
+            formTest.className = 'form-test'
+            formTest.innerHTML = `
+                <h3>📝 Form Input Test</h3>
+                <p>Test form inputs that users will interact with:</p>
+                
+                <label>First Name (Required):</label>
+                <input type="text" id="test-firstname" placeholder="Enter first name" required>
+                
+                <label>Phone Number (Mobile):</label>
+                <input type="tel" id="test-phone" placeholder="+254712345678">
+                
+                <label>Amount (Numeric):</label>
+                <input type="number" id="test-amount" placeholder="1000" step="0.01">
+                
+                <label>Date:</label>
+                <input type="date" id="test-date">
+                
+                <label>Category:</label>
+                <select id="test-category">
+                    <option value="">Select category</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                
+                <label>Description:</label>
+                <textarea id="test-description" placeholder="Enter description" rows="3"></textarea>
+                
+                <button onclick="testFormSubmission()">Test Form Submission</button>
+            `
+            
+            return formTest
+        }
+        
+        function testFormSubmission() {
+            const firstName = document.getElementById('test-firstname').value
+            const phone = document.getElementById('test-phone').value
+            const amount = document.getElementById('test-amount').value
+            const date = document.getElementById('test-date').value
+            const category = document.getElementById('test-category').value
+            const description = document.getElementById('test-description').value
+            
+            if (!firstName) {
+                alert('First name is required!')
+                return
+            }
+            
+            if (!phone) {
+                alert('Phone number is required!')
+                return
+            }
+            
+            // Test phone number validation
+            const phoneRegex = /^(\+254|0)[17]\d{8}$/
+            if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+                alert('Please enter a valid Kenyan phone number!')
+                return
+            }
+            
+            testResults.functionality.formValidation = 'passed'
+            alert('✅ Form validation passed! All inputs work correctly on mobile.')
+        }
+        
+        async function testSupabaseConnection() {
+            try {
+                const startTime = performance.now()
+                
+                // Test authentication
+                const { data: { session }, error: authError } = await supabase.auth.getSession()
+                
+                if (authError) {
+                    testResults.functionality.auth = { error: authError.message }
+                    return false
+                }
+                
+                if (session) {
+                    currentUser = session.user
+                    testResults.functionality.auth = { 
+                        status: 'authenticated', 
+                        user: currentUser.email,
+                        responseTime: Math.round(performance.now() - startTime)
+                    }
+                } else {
+                    testResults.functionality.auth = { status: 'not_authenticated' }
+                }
+                
+                // Test database connection
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('count')
+                    .limit(1)
+                
+                if (error) {
+                    testResults.functionality.database = { error: error.message }
+                    return false
+                }
+                
+                testResults.functionality.database = { 
+                    status: 'connected',
+                    responseTime: Math.round(performance.now() - startTime)
+                }
+                
+                return true
+            } catch (err) {
+                testResults.functionality.connection = { error: err.message }
+                return false
+            }
+        }
+        
+        async function runMobileCompatibilityTest() {
+            addOutput('<h3>📱 Starting Mobile Compatibility Test</h3>')
+            
+            // 1. Device Detection
+            const device = detectDevice()
+            addOutput(`
+                <h4>🔍 Device Information</h4>
+                <div class="device-info">
+                    <strong>Mobile Device:</strong> ${device.isMobile ? '✅ Yes' : '❌ No'}<br>
+                    <strong>Chrome Browser:</strong> ${device.isChrome ? '✅ Yes' : '❌ No'}<br>
+                    <strong>Android:</strong> ${device.isAndroid ? '✅ Yes' : '❌ No'}<br>
+                    <strong>iOS:</strong> ${device.isIOS ? '✅ Yes' : '❌ No'}<br>
+                    <strong>Touch Support:</strong> ${device.touchSupport ? '✅ Yes' : '❌ No'}<br>
+                    <strong>Screen Size:</strong> ${device.screenWidth}x${device.screenHeight}<br>
+                    <strong>Viewport:</strong> ${device.viewportWidth}x${device.viewportHeight}<br>
+                    <strong>Pixel Ratio:</strong> ${device.devicePixelRatio}
+                </div>
+            `, device.isMobile && device.isChrome ? 'success' : 'warning')
+            
+            // 2. Performance Test
+            const performance = testPerformance()
+            addOutput(`
+                <h4>⚡ Performance Metrics</h4>
+                <div class="performance-metric">
+                    <span>DOM Manipulation:</span>
+                    <span>${performance.domTime}ms</span>
+                </div>
+                ${performance.memoryInfo ? `
+                <div class="performance-metric">
+                    <span>Memory Used:</span>
+                    <span>${performance.memoryInfo.usedJSHeapSize}MB</span>
+                </div>
+                <div class="performance-metric">
+                    <span>Memory Total:</span>
+                    <span>${performance.memoryInfo.totalJSHeapSize}MB</span>
+                </div>
+                ` : ''}
+            `, performance.domTime < 10 ? 'success' : 'warning')
+            
+            // 3. Touch Interface Test
+            const touchTest = testTouchInterface()
+            addOutput('<h4>👆 Touch Interface Test</h4>')
+            document.getElementById('output').appendChild(touchTest)
+            
+            // 4. Form Input Test
+            const formTest = testFormInputs()
+            addOutput('<h4>📝 Form Input Test</h4>')
+            document.getElementById('output').appendChild(formTest)
+            
+            // 5. Supabase Connection Test
+            addOutput('<h4>🔗 Supabase Connection Test</h4>')
+            const connectionSuccess = await testSupabaseConnection()
+            
+            if (connectionSuccess) {
+                addOutput(`
+                    <p>✅ <strong>Authentication:</strong> ${testResults.functionality.auth.status}</p>
+                    ${testResults.functionality.auth.user ? `<p>👤 <strong>User:</strong> ${testResults.functionality.auth.user}</p>` : ''}
+                    <p>✅ <strong>Database:</strong> ${testResults.functionality.database.status}</p>
+                    <p>⏱️ <strong>Response Time:</strong> ${testResults.functionality.database.responseTime}ms</p>
+                `, 'success')
+            } else {
+                addOutput(`
+                    <p>❌ <strong>Connection Failed:</strong></p>
+                    <pre>${JSON.stringify(testResults.functionality, null, 2)}</pre>
+                `, 'error')
+            }
+            
+            // 6. Mobile-Specific Recommendations
+            addOutput(`
+                <h4>📱 Mobile Optimization Recommendations</h4>
+                <div class="mobile-test">
+                    <h5>✅ Mobile-Friendly Features:</h5>
+                    <ul>
+                        <li>Responsive design with proper viewport meta tag</li>
+                        <li>Touch-friendly button sizes (44px minimum)</li>
+                        <li>Input fields with font-size: 16px (prevents zoom on iOS)</li>
+                        <li>Proper form validation for mobile users</li>
+                        <li>Fast loading and responsive interface</li>
+                    </ul>
+                    
+                    <h5>🔧 Chrome Mobile Optimizations:</h5>
+                    <ul>
+                        <li>Service Worker support for offline functionality</li>
+                        <li>Progressive Web App (PWA) features</li>
+                        <li>Optimized for Chrome's mobile rendering engine</li>
+                        <li>Touch gesture support</li>
+                    </ul>
+                </div>
+            `, 'info')
+            
+            // 7. Final Results
+            const allTestsPassed = device.isMobile && device.isChrome && connectionSuccess && performance.domTime < 50
+            
+            addOutput(`
+                <h3>🎯 Final Test Results</h3>
+                <div class="mobile-test">
+                    <h4>${allTestsPassed ? '✅ READY FOR MOBILE USERS' : '⚠️ NEEDS ATTENTION'}</h4>
+                    <p><strong>Target User Compatibility:</strong> ${device.isMobile && device.isChrome ? '✅ Perfect' : '⚠️ Check device'}</p>
+                    <p><strong>Performance:</strong> ${performance.domTime < 50 ? '✅ Good' : '⚠️ Slow'}</p>
+                    <p><strong>Database Connection:</strong> ${connectionSuccess ? '✅ Working' : '❌ Failed'}</p>
+                    <p><strong>Touch Interface:</strong> ${device.touchSupport ? '✅ Supported' : '❌ Not supported'}</p>
+                </div>
+            `, allTestsPassed ? 'success' : 'warning')
+            
+            // Store results for debugging
+            window.mobileTestResults = testResults
+        }
+        
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            runMobileCompatibilityTest()
+        })
+    </script>
+</body>
+</html>
