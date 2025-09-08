@@ -1,8 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# Dependencies
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,71 +8,29 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# Testing
+coverage/
+.jest/
 
-# next.js
-/.next/
-/out/
+# Next.js
+.next/
+out/
+build/
 
-# production
-/build
+# Production
+dist/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# Environment variables (CRITICAL - never commit these)
 .env*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# Supabase
-.supabase/
-
-# Testing & Coverage
-/coverage/
-*.lcov
-.jest/
-
-# IDE & Editor Files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS Generated Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-logs
-*.log
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 .pnpm-debug.log*
 
 # Runtime data
@@ -104,86 +60,31 @@ pids
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
+# Parcel-bundler cache
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-out
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# Nuxt.js build / generate output
-.nuxt
-dist
+# Supabase
+.supabase/
 
-# Storybook build outputs
-.out
-.storybook-out
+# Vercel
+.vercel
 
-# Temporary folders
-tmp/
-temp/
+# Netlify
+.netlify
 
-# Local development
-*.local
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.bak
-*.backup
-*.old
-
-# Certificate files
-*.pem
-*.key
-*.crt
-*.csr
-*.p12
-*.pfx
-
-# API Keys & Secrets (if accidentally created)
-secrets/
-keys/
-api-keys.txt
-
-# SWC (Speedy Web Compiler) cache
-.swc/
-
-# Additional build caches
-.turbo/
-.turbo-cache/
-
-# Test coverage reports
-coverage/
-*.lcov
-.jest/
-
-# Storybook
-.storybook-static/
-
-# Sentry (if you add error tracking)
-.sentryclirc
-
-# Local development overrides
-docker-compose.override.yml
-docker-compose.override.yaml
-
-# Backup and temporary files
-*.tmp
-*.temp
-*.orig
-*.rej
-
-# Editor swap files
+# IDE & Editor Files
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-# OS specific files
+# OS Generated Files
 .DS_Store
 .DS_Store?
 ._*
@@ -193,20 +94,61 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Logs (more comprehensive)
+# Logs
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
-turbo-build.log*
 
-# Local Netlify folder
-.netlify
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Development and Debug Files
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificate files
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# API Keys & Secrets
+secrets/
+keys/
+api-keys.txt
+
+# SWC cache
+.swc/
+
+# Turbo cache
+.turbo/
+.turbo-cache/
+
+# Storybook
+.storybook-static/
+
+# Sentry
+.sentryclirc
+
+# Docker overrides
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+*.orig
+*.rej
+
+# Development and Debug Files (CRITICAL - don't ship these)
 debug-*.js
 debug-*.sql
 test-*.js
@@ -220,79 +162,44 @@ emergency-*.sql
 manual-*.sql
 verify-*.sql
 setup-development-*.sql
+fix-*.sql
 
 # Debug HTML files
 public/debug-*.html
 public/test-*.html
 
-# Backup files
-*.backup
-*.bak
-.env.local.backup
-
-# Temporary development files
-*.tmp
-*.temp
-*.orig
-*.rej
-
 # Development scripts
 debug-*.sh
 test-*.sh
 setup-*.sh
+cleanup-*.sh
 
-# Version control files (if any)
-*.vscode
-*.idea
+# Documentation files (keep only essential)
+# Remove these from production:
+CYBERSECURITY-ASSESSMENT.md
+DEPLOYMENT-READINESS.md
+DEPLOYMENT-SUMMARY.md
+FEATURES-README.md
+IMPLEMENTATION_GUIDE.md
+NETLIFY-DEPLOYMENT.md
+PERFORMANCE_OPTIMIZATION.md
+SCALABLE_ADMIN_ARCHITECTURE.md
+SECURITY-CHECKLIST.md
+SECURITY-VERIFICATION-COMPLETE.md
+SECURITY.md
+SUPABASE_SETUP.md
 
-# Local development overrides
-docker-compose.override.yml
-docker-compose.override.yaml
+# Keep only these essential files:
+# README.md (keep)
+# PRE-SHIP-CHECKLIST.md (keep for reference)
 
-# Additional development files
-*.dev
-*.development
-*.local
-*.debug
+# Database files (keep only production schema)
+# Remove these from production:
+*.sql
+!supabase-schema.sql
+!setup-storage.sql
 
-# Production deployment files (keep only essential)
-# Uncomment if you want to ignore deployment docs in production
-# DEPLOYMENT-*.md
-# NETLIFY-DEPLOYMENT.md
-# DEPLOYMENT-SUMMARY.md
-
-# Database migration files (keep only production schema)
-# Uncomment if you want to ignore all SQL files except main schema
-# *.sql
-# !supabase-schema.sql
-# !setup-storage.sql
-
-# Documentation files (optional - uncomment if not needed in production)
-# IMPLEMENTATION_GUIDE.md
-# SCALABLE_ADMIN_ARCHITECTURE.md
-# PERFORMANCE_OPTIMIZATION.md
-# SECURITY-CHECKLIST.md
-# ENHANCEMENTS_SUMMARY.md
-# FEATURES-README.md
-
-# IDE and Editor specific files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS specific files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# Package manager files
+# Package manager backups
 package-lock.json.backup
 yarn.lock.backup
 pnpm-lock.yaml.backup
